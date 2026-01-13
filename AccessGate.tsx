@@ -10,19 +10,20 @@ const AccessGate: React.FC<Props> = ({ onUnlock }) => {
   const [error, setError] = useState(false);
   const [isBypassing, setIsBypassing] = useState(false);
 
-  // KUNCI PINTU (Ganti di sini kalau mau ubah kuncinya, Boss!)
-  const SECRET_KEY = "PHANTOM_RIPPER_2025";
+  // KUNCI PINTU 2026 EDITION 🚀
+  const SECRET_KEY = "PHANTOM_RIPPER_2026";
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
-    if (key.toUpperCase() === SECRET_KEY) {
+    // Gunakan .trim() untuk membuang spasi yang tidak sengaja terketik
+    if (key.trim().toUpperCase() === SECRET_KEY) {
       setIsBypassing(true);
       setTimeout(() => {
         onUnlock();
       }, 1000);
     } else {
       setError(true);
-      setTimeout(() => setError(false), 1000);
+      setTimeout(() => setError(false), 2000);
       setKey('');
     }
   };
@@ -49,7 +50,7 @@ const AccessGate: React.FC<Props> = ({ onUnlock }) => {
               placeholder="ENTER SECRET KEY..."
               value={key}
               onChange={(e) => setKey(e.target.value)}
-              className={`w-full bg-black/40 border ${error ? 'border-red-500 animate-shake' : 'border-white/10'} rounded-2xl py-5 px-6 text-center text-xs tracking-[0.5em] text-[#00f0ff] outline-none focus:border-[#00f0ff]/50 transition-all font-black`}
+              className={`w-full bg-black/40 border ${error ? 'border-red-500 animate-shake shadow-[0_0_20_rgba(239,68,68,0.2)]' : 'border-white/10'} rounded-2xl py-5 px-6 text-center text-xs tracking-[0.5em] text-[#00f0ff] outline-none focus:border-[#00f0ff]/50 transition-all font-black`}
               autoFocus
             />
           </div>
@@ -67,8 +68,11 @@ const AccessGate: React.FC<Props> = ({ onUnlock }) => {
         </div>
 
         {error && (
-          <div className="absolute inset-0 bg-red-900/20 backdrop-blur-sm flex items-center justify-center animate-in fade-in">
-            <span className="text-red-500 font-black text-xl italic tracking-tighter uppercase">ACCESS DENIED</span>
+          <div className="absolute inset-0 bg-red-900/40 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300 z-50">
+            <div className="text-center">
+              <span className="text-white font-black text-2xl italic tracking-tighter uppercase block mb-2">ACCESS DENIED</span>
+              <span className="text-[8px] text-red-200 uppercase font-bold tracking-[0.3em]">Check your key and try again</span>
+            </div>
           </div>
         )}
       </div>
