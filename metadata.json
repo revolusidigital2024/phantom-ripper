@@ -1,0 +1,8 @@
+
+{
+  "name": "VIBE-RIPPER",
+  "description": "Bedah rahasia vibe konten apapun. Dapatkan prompt sinematik dan spesifikasi teknis secara instan.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
