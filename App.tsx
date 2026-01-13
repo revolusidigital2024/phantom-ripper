@@ -5,8 +5,10 @@ import { analyzeMedia, generateVariants } from './geminiService';
 import Header from './Header';
 import InputZone from './InputZone';
 import ResultZone from './ResultZone';
+import AccessGate from './AccessGate';
 
 const App: React.FC = () => {
+  const [hasAccess, setHasAccess] = useState<boolean>(() => localStorage.getItem('phantom_access_granted') === 'true');
   const [apiKey, setApiKey] = useState<string>(localStorage.getItem('gemini_api_key') || '');
   const [state, setState] = useState<AppState>({
     isAnalyzing: false,
@@ -26,6 +28,17 @@ const App: React.FC = () => {
     const saved = localStorage.getItem('phantom_history');
     if (saved) setHistory(JSON.parse(saved));
   }, []);
+
+  const handleGrantAccess = () => {
+    setHasAccess(true);
+    localStorage.setItem('phantom_access_granted', 'true');
+  };
+
+  const handleLockSystem = () => {
+    localStorage.removeItem('phantom_access_granted');
+    setHasAccess(false);
+    setShowSettings(false);
+  };
 
   const handleApiKeyChange = (val: string) => {
     setApiKey(val);
@@ -55,7 +68,7 @@ const App: React.FC = () => {
     if (!state.selectedFile) return;
     if (!apiKey) {
       setState(prev => ({ ...prev, error: "OI BOSS! Pasang API Key dulu di SETTINGS (icon gear)! 💀" }));
-      setShowSettings(true); // Auto open settings if key is missing
+      setShowSettings(true);
       return;
     }
 
@@ -87,14 +100,16 @@ const App: React.FC = () => {
     }
   };
 
+  if (!hasAccess) {
+    return <AccessGate onUnlock={handleGrantAccess} />;
+  }
+
   return (
-    <div className="min-h-screen pb-32 pt-24 selection:bg-[#ff007a] selection:text-white">
-      <Header onOpenSettings={() => setShowSettings(true)} />
+    <div className="min-h-screen pb-32 pt-24 selection:bg-[#ff007a] selection:text-white animate-in fade-in duration-1000">
+      <Header onOpenSettings={() => setShowSettings(true)} onLock={handleLockSystem} />
       
       <main className="max-w-[1400px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Left: Input */}
         <div className="lg:col-span-5 space-y-8">
-          
           <InputZone 
             onFileSelect={handleFileSelect}
             onReset={handleReset}
@@ -128,7 +143,6 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: Output */}
         <div className="lg:col-span-7">
           <ResultZone 
             result={state.result}
@@ -142,7 +156,6 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* Settings Modal (Now with AI Integration) */}
       {showSettings && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95 backdrop-blur-md animate-in fade-in duration-300">
           <div className="glass-panel max-w-lg w-full p-8 rounded-[2.5rem] border-white/10 relative overflow-hidden">
@@ -153,7 +166,6 @@ const App: React.FC = () => {
             <h2 className="text-xl font-black italic tracking-tighter text-white uppercase mb-8">System Config</h2>
             
             <div className="space-y-8">
-              {/* AI INTEGRATION PANEL */}
               <div className="bg-[#0a0a0c] p-6 rounded-3xl border border-white/5">
                 <div className="flex items-center gap-2 mb-6">
                   <span className="text-[#00f0ff]">
@@ -186,11 +198,6 @@ const App: React.FC = () => {
                     className="w-full bg-[#050507] border border-[#00f0ff]/10 rounded-xl py-4 pl-12 pr-4 text-xs text-white placeholder:text-zinc-900 focus:border-[#00f0ff]/40 outline-none transition-all shadow-inner"
                   />
                 </div>
-                
-                <p className="mt-5 text-[9px] text-zinc-600 font-medium flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-[#00f0ff] rounded-full"></span>
-                  Unlocks <span className="text-zinc-400 font-bold">Deep Vibe Rip</span> and <span className="text-zinc-400 font-bold">Cinematic Analysis</span>. Key stored locally.
-                </p>
               </div>
 
               <div className="space-y-4">
@@ -200,6 +207,14 @@ const App: React.FC = () => {
                 >
                   SAVE AND CLOSE
                 </button>
+                
+                <button 
+                  onClick={handleLockSystem}
+                  className="w-full py-3 bg-white/5 text-zinc-500 hover:text-red-500 border border-white/5 hover:border-red-500/30 rounded-full text-[9px] font-black uppercase tracking-[0.2em] transition-all"
+                >
+                  WIPE SESSION & LOCK SYSTEM
+                </button>
+
                 <p className="text-center text-[8px] text-zinc-600 uppercase font-bold tracking-widest">Interface Optimized // 120Hz Enabled</p>
               </div>
             </div>
