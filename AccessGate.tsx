@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 interface Props {
@@ -10,12 +9,10 @@ const AccessGate: React.FC<Props> = ({ onUnlock }) => {
   const [error, setError] = useState(false);
   const [isBypassing, setIsBypassing] = useState(false);
 
-  // KUNCI PINTU 2026 EDITION 🚀
   const SECRET_KEY = "PHANTOM_RIPPER_2026";
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
-    // Gunakan .trim() untuk membuang spasi yang tidak sengaja terketik
     if (key.trim().toUpperCase() === SECRET_KEY) {
       setIsBypassing(true);
       setTimeout(() => {
@@ -31,13 +28,15 @@ const AccessGate: React.FC<Props> = ({ onUnlock }) => {
   return (
     <div className={`fixed inset-0 z-[999] bg-[#050507] flex items-center justify-center p-6 transition-all duration-1000 ${isBypassing ? 'opacity-0 scale-110 pointer-events-none' : 'opacity-100'}`}>
       <div className="max-w-md w-full glass-panel p-10 rounded-[2.5rem] border-[#ff007a]/30 relative overflow-hidden text-center">
-        {/* Decorative Elements */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#ff007a] to-transparent"></div>
         <div className="mb-8">
-          <div className="w-20 h-20 bg-[#ff007a]/10 border-2 border-[#ff007a]/40 rounded-full flex items-center justify-center mx-auto mb-6 group">
-            <svg className={`w-10 h-10 ${error ? 'text-red-500 animate-bounce' : 'text-[#ff007a]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
+          {/* LOGO BARU DI GATE ACCESS */}
+          <div className="w-32 h-32 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mx-auto mb-8 rotate-12 group hover:rotate-0 transition-all duration-500 overflow-hidden p-4">
+             <img 
+              src="logo.png" 
+              alt="Phantom Arcade" 
+              className={`w-full h-full object-contain ${error ? 'animate-shake' : ''}`} 
+             />
           </div>
           <h1 className="text-2xl font-black italic tracking-tighter text-white uppercase italic">SYSTEM LOCKED</h1>
           <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.4em] mt-2 italic">Requires Phantom Access Key</p>
@@ -50,7 +49,7 @@ const AccessGate: React.FC<Props> = ({ onUnlock }) => {
               placeholder="ENTER SECRET KEY..."
               value={key}
               onChange={(e) => setKey(e.target.value)}
-              className={`w-full bg-black/40 border ${error ? 'border-red-500 animate-shake shadow-[0_0_20_rgba(239,68,68,0.2)]' : 'border-white/10'} rounded-2xl py-5 px-6 text-center text-xs tracking-[0.5em] text-[#00f0ff] outline-none focus:border-[#00f0ff]/50 transition-all font-black`}
+              className={`w-full bg-black/40 border ${error ? 'border-red-500 animate-shake shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'border-white/10'} rounded-2xl py-5 px-6 text-center text-xs tracking-[0.5em] text-[#00f0ff] outline-none focus:border-[#00f0ff]/50 transition-all font-black`}
               autoFocus
             />
           </div>

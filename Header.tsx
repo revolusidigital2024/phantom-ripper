@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface Props {
@@ -10,9 +9,16 @@ const Header: React.FC<Props> = ({ onOpenSettings, onLock }) => (
   <header className="fixed top-0 left-0 w-full z-50 p-4">
     <div className="max-w-[1600px] mx-auto flex justify-between items-center glass-panel px-6 py-3 rounded-full border-white/10">
       <div className="flex items-center gap-4">
-        <div className="w-8 h-8 bg-gradient-to-br from-[#ff007a] to-[#00f0ff] rotate-45 flex items-center justify-center overflow-hidden">
-          <span className="text-black font-black -rotate-45 text-lg">P</span>
+        {/* LOGO BARU DARI USER */}
+        <div className="w-12 h-12 flex items-center justify-center relative group">
+          <div className="absolute inset-0 bg-[#ff007a]/20 blur-lg rounded-full group-hover:bg-[#ccff00]/20 transition-all duration-500"></div>
+          <img 
+            src="logo.png" 
+            alt="Phantom Arcade Logo" 
+            className="w-10 h-10 object-contain relative z-10 group-hover:scale-110 transition-transform duration-300"
+          />
         </div>
+        
         <div className="leading-tight">
           <h1 className="text-lg font-black tracking-tighter italic glitch-text">
             PHANTOM<span className="text-[#00f0ff]">ARCADE</span>
@@ -51,7 +57,7 @@ const Header: React.FC<Props> = ({ onOpenSettings, onLock }) => (
             className="p-2 hover:bg-white/5 rounded-full transition-colors border border-white/5 group"
           >
             <svg className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </button>
