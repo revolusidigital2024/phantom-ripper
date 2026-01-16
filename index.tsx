@@ -3,13 +3,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-// Inisialisasi process.env secara manual buat browser
-// Ini kunci biar error "An API Key must be set..." ilang
+// FIX: Initialize process.env manually for browser context to ensure SDK has access.
+// As per guidelines, the API key must be pre-configured and not retrieved from localStorage or UI.
 (window as any).process = (window as any).process || { env: {} };
 (window as any).process.env = (window as any).process.env || {};
-if (!(window as any).process.env.API_KEY) {
-  (window as any).process.env.API_KEY = localStorage.getItem('phantom_api_key') || '';
-}
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
