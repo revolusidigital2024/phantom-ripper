@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { TabType, AppState, PromptResult } from './types';
 import { analyzeMedia, generateVariants } from './geminiService';
@@ -8,6 +9,7 @@ import AccessGate from './AccessGate';
 
 const App: React.FC = () => {
   const [hasAccess, setHasAccess] = useState<boolean>(() => localStorage.getItem('phantom_access_granted') === 'true');
+  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem('phantom_api_key') || process.env.API_KEY || '');
   const [state, setState] = useState<AppState>({
     isAnalyzing: false,
     isMixing: false,
@@ -21,6 +23,14 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<PromptResult[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>(TabType.PREVIEW);
   const [showSettings, setShowSettings] = useState(false);
+
+  // Sync state to global process.env for the service to consume
+  useEffect(() => {
+    if (apiKey) {
+      process.env.API_KEY = apiKey;
+      localStorage.setItem('phantom_api_key', apiKey);
+    }
+  }, [apiKey]);
 
   useEffect(() => {
     const saved = localStorage.getItem('phantom_history');
@@ -57,9 +67,13 @@ const App: React.FC = () => {
     });
   };
 
-  // FIX: analyzeMedia now pulls API key from environment, simplifying the call
   const startAnalysis = async () => {
     if (!state.selectedFile) return;
+    if (!apiKey) {
+      setState(prev => ({ ...prev, error: "API Key missing. Enter it in System Config." }));
+      setShowSettings(true);
+      return;
+    }
 
     setState(prev => ({ ...prev, isAnalyzing: true, error: null }));
     try {
@@ -74,7 +88,6 @@ const App: React.FC = () => {
     }
   };
 
-  // FIX: generateVariants now pulls API key from environment
   const handleGenerateVariants = async () => {
     if (!state.result || !state.selectedFile) return;
     setState(prev => ({ ...prev, isMixing: true }));
@@ -164,10 +177,38 @@ const App: React.FC = () => {
                   <h3 className="text-[11px] font-black text-[#00f0ff] uppercase tracking-[0.2em]">INTEGRATION STATUS</h3>
                 </div>
 
-                {/* API Key management UI removed to follow mandatory security guidelines */}
-                <p className="text-[10px] text-zinc-500 uppercase tracking-widest leading-relaxed">
-                  System operational. All AI requests are securely managed via environment configurations.
-                </p>
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">GEMINI API KEY:</label>
+                    <input 
+                      type="password"
+                      placeholder="ENTER API KEY..."
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-xs text-[#00f0ff] focus:border-[#00f0ff]/50 outline-none transition-all font-mono"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-[8px] text-zinc-600 uppercase font-bold tracking-widest">Connection:</span>
+                    <span className={`text-[8px] font-black px-2 py-0.5 rounded ${apiKey ? 'bg-[#ccff00]/10 text-[#ccff00]' : 'bg-red-500/10 text-red-500'}`}>
+                      {apiKey ? 'LINKED' : 'AWAITING KEY'}
+                    </span>
+                  </div>
+                  
+                  <p className="text-[9px] text-zinc-600 leading-relaxed italic mt-2">
+                    Manual key entry enabled. Key is stored locally for session persistence.
+                  </p>
+
+                  <a 
+                    href="https://aistudio.google.com/app/apikey" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block text-center text-[8px] text-[#00f0ff] hover:underline uppercase tracking-widest font-bold mt-2"
+                  >
+                    Get API Key from Google AI Studio
+                  </a>
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -175,7 +216,7 @@ const App: React.FC = () => {
                   onClick={() => setShowSettings(false)}
                   className="w-full py-4 bg-[#ff007a] text-white font-black uppercase text-[10px] tracking-[0.3em] rounded-full hover:bg-[#ff007a]/80 transition-all shadow-[0_0_20px_rgba(255,0,122,0.3)]"
                 >
-                  SAVE AND CLOSE
+                  SAVE CONFIG
                 </button>
                 
                 <button 
