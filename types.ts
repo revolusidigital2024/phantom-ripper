@@ -5,15 +5,16 @@
  */
 declare global {
   interface ProcessEnv {
-    API_KEY: string;
     [key: string]: string | undefined;
+    API_KEY?: string;
   }
 
   interface Process {
     env: ProcessEnv;
   }
 
-  // Deklarasi variabel global agar bisa diakses di file mana pun
+  // Mendeklarasikan 'process' sebagai variabel global agar TypeScript tidak komplain.
+  // Ini akan diisi secara runtime di index.tsx
   var process: Process;
 }
 
