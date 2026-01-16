@@ -1,4 +1,22 @@
 
+/**
+ * Global declaration to satisfy TypeScript for process.env usage
+ * required by system instructions.
+ */
+declare global {
+  interface ProcessEnv {
+    API_KEY: string;
+    [key: string]: string | undefined;
+  }
+
+  interface Process {
+    env: ProcessEnv;
+  }
+
+  // Deklarasi variabel global agar bisa diakses di file mana pun
+  var process: Process;
+}
+
 export interface TechnicalSpecs {
   angle: string;
   lens: string;
@@ -55,3 +73,5 @@ export enum TabType {
   PREVIEW = 'PREVIEW',
   JSON = 'JSON'
 }
+
+export {};

@@ -10,6 +10,7 @@ const AccessGate: React.FC<Props> = ({ onUnlock }) => {
   const [isBypassing, setIsBypassing] = useState(false);
 
   const SECRET_KEY = "PHANTOM_RIPPER_2026";
+  const logoPath = './logo.png';
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,15 +31,17 @@ const AccessGate: React.FC<Props> = ({ onUnlock }) => {
       <div className="max-w-md w-full glass-panel p-10 rounded-[2.5rem] border-[#ff007a]/30 relative overflow-hidden text-center">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#ff007a] to-transparent"></div>
         <div className="mb-8">
-          {/* LOGO BARU DI GATE ACCESS */}
           <div className="w-32 h-32 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mx-auto mb-8 rotate-12 group hover:rotate-0 transition-all duration-500 overflow-hidden p-4">
              <img 
-              src="logo.png" 
+              src={logoPath} 
               alt="Phantom Arcade" 
-              className={`w-full h-full object-contain ${error ? 'animate-shake' : ''}`} 
+              className={`w-full h-full object-contain ${error ? 'animate-shake' : ''}`}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'https://api.dicebear.com/7.x/shapes/svg?seed=phantom&backgroundColor=0a0a0c';
+              }}
              />
           </div>
-          <h1 className="text-2xl font-black italic tracking-tighter text-white uppercase italic">SYSTEM LOCKED</h1>
+          <h1 className="text-2xl font-black italic tracking-tighter text-white uppercase">SYSTEM LOCKED</h1>
           <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.4em] mt-2 italic">Requires Phantom Access Key</p>
         </div>
 

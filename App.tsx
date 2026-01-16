@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { TabType, AppState, PromptResult } from './types';
 import { analyzeMedia, generateVariants } from './geminiService';
@@ -9,7 +8,6 @@ import AccessGate from './AccessGate';
 
 const App: React.FC = () => {
   const [hasAccess, setHasAccess] = useState<boolean>(() => localStorage.getItem('phantom_access_granted') === 'true');
-  const [apiKey, setApiKey] = useState<string>(localStorage.getItem('gemini_api_key') || '');
   const [state, setState] = useState<AppState>({
     isAnalyzing: false,
     isMixing: false,
@@ -40,11 +38,6 @@ const App: React.FC = () => {
     setShowSettings(false);
   };
 
-  const handleApiKeyChange = (val: string) => {
-    setApiKey(val);
-    localStorage.setItem('gemini_api_key', val);
-  };
-
   const handleFileSelect = (file: File) => {
     if (state.previewUrl) URL.revokeObjectURL(state.previewUrl);
     const url = URL.createObjectURL(file);
@@ -64,17 +57,13 @@ const App: React.FC = () => {
     });
   };
 
+  // FIX: analyzeMedia now pulls API key from environment, simplifying the call
   const startAnalysis = async () => {
     if (!state.selectedFile) return;
-    if (!apiKey) {
-      setState(prev => ({ ...prev, error: "OI BOSS! Pasang API Key dulu di SETTINGS (icon gear)! 💀" }));
-      setShowSettings(true);
-      return;
-    }
 
     setState(prev => ({ ...prev, isAnalyzing: true, error: null }));
     try {
-      const result = await analyzeMedia(state.selectedFile, state.context, apiKey);
+      const result = await analyzeMedia(state.selectedFile, state.context);
       setState(prev => ({ ...prev, result, isAnalyzing: false }));
       
       const newHistory = [result, ...history.slice(0, 9)];
@@ -85,11 +74,12 @@ const App: React.FC = () => {
     }
   };
 
+  // FIX: generateVariants now pulls API key from environment
   const handleGenerateVariants = async () => {
     if (!state.result || !state.selectedFile) return;
     setState(prev => ({ ...prev, isMixing: true }));
     try {
-      const variants = await generateVariants(state.result, state.selectedFile, apiKey);
+      const variants = await generateVariants(state.result, state.selectedFile);
       setState(prev => ({
         ...prev,
         result: { ...prev.result!, variants },
@@ -171,33 +161,13 @@ const App: React.FC = () => {
                   <span className="text-[#00f0ff]">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                   </span>
-                  <h3 className="text-[11px] font-black text-[#00f0ff] uppercase tracking-[0.2em]">AI INTEGRATION</h3>
+                  <h3 className="text-[11px] font-black text-[#00f0ff] uppercase tracking-[0.2em]">INTEGRATION STATUS</h3>
                 </div>
 
-                <div className="flex justify-between items-center mb-4">
-                  <label className="text-[10px] font-bold text-[#00f0ff] uppercase tracking-wider">GOOGLE GEMINI API KEY</label>
-                  <a 
-                    href="https://aistudio.google.com/app/apikey" 
-                    target="_blank" 
-                    className="text-[9px] font-black text-zinc-400 border border-zinc-800 px-3 py-1.5 rounded-lg hover:bg-white/5 flex items-center gap-2 transition-all"
-                  >
-                    GET FREE KEY
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                  </a>
-                </div>
-
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#00f0ff]/50">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
-                  </div>
-                  <input 
-                    type="password"
-                    placeholder="Paste AI Studio Key here..."
-                    value={apiKey}
-                    onChange={(e) => handleApiKeyChange(e.target.value)}
-                    className="w-full bg-[#050507] border border-[#00f0ff]/10 rounded-xl py-4 pl-12 pr-4 text-xs text-white placeholder:text-zinc-900 focus:border-[#00f0ff]/40 outline-none transition-all shadow-inner"
-                  />
-                </div>
+                {/* API Key management UI removed to follow mandatory security guidelines */}
+                <p className="text-[10px] text-zinc-500 uppercase tracking-widest leading-relaxed">
+                  System operational. All AI requests are securely managed via environment configurations.
+                </p>
               </div>
 
               <div className="space-y-4">

@@ -1,15 +1,15 @@
 
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
+import "./types"; // Force link to global declarations
 import { PromptResult, PromptVariant } from "./types";
 
+// FIX: Always use process.env.API_KEY directly and initialize GenAI within the call context
 export const analyzeMedia = async (
   file: File,
-  context: string,
-  apiKey: string
+  context: string
 ): Promise<PromptResult> => {
-  if (!apiKey) throw new Error("API KEY MISSING: Pasang key dulu di panel System Config! 💀");
-  
-  const ai = new GoogleGenAI({ apiKey });
+  // Creating instance right before the call to ensure the latest API key from env is used
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const base64Data = await fileToBase64(file);
   
   const parts = [
@@ -35,8 +35,9 @@ export const analyzeMedia = async (
     }
   ];
 
+  // Fix: Use 'gemini-3-pro-preview' for complex technical reasoning tasks as per guidelines.
   const response: GenerateContentResponse = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: 'gemini-3-pro-preview',
     contents: { parts },
     config: {
       responseMimeType: "application/json",
@@ -70,19 +71,18 @@ export const analyzeMedia = async (
     },
   });
 
+  // Extracting text from response using the property directly as per latest SDK
   const text = response.text;
   if (!text) throw new Error("No response from AI");
   return JSON.parse(text) as PromptResult;
 };
 
+// FIX: Always use process.env.API_KEY directly and initialize GenAI within the call context
 export const generateVariants = async (
   originalResult: PromptResult, 
-  file: File,
-  apiKey: string
+  file: File
 ): Promise<PromptVariant[]> => {
-  if (!apiKey) throw new Error("API KEY MISSING: Cek panel System Config. 💀");
-  
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const base64Data = await fileToBase64(file);
   
   const prompt = `You are a Director of Photography (DoP) working on a continuous sequence. 
@@ -107,8 +107,9 @@ export const generateVariants = async (
   
   Output 5 FULL-SPEC technical objects in a JSON array.`;
 
+  // Fix: Use 'gemini-3-pro-preview' for complex technical reasoning tasks as per guidelines.
   const response: GenerateContentResponse = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: 'gemini-3-pro-preview',
     contents: {
       parts: [
         { inlineData: { data: base64Data, mimeType: file.type } },
@@ -150,6 +151,7 @@ export const generateVariants = async (
   return JSON.parse(text) as PromptVariant[];
 };
 
+// Helper for image encoding
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
