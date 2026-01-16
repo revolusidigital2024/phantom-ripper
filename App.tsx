@@ -9,7 +9,7 @@ import AccessGate from './AccessGate';
 
 const App: React.FC = () => {
   const [hasAccess, setHasAccess] = useState<boolean>(() => localStorage.getItem('phantom_access_granted') === 'true');
-  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem('phantom_api_key') || process.env.API_KEY || '');
+  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem('phantom_api_key') || (process.env && process.env.API_KEY) || '');
   const [state, setState] = useState<AppState>({
     isAnalyzing: false,
     isMixing: false,
@@ -24,9 +24,10 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>(TabType.PREVIEW);
   const [showSettings, setShowSettings] = useState(false);
 
-  // Sync state to global process.env for the service to consume
+  // Sync state ke global process.env secara paksa
   useEffect(() => {
     if (apiKey) {
+      if (!process.env) (window as any).process.env = {};
       process.env.API_KEY = apiKey;
       localStorage.setItem('phantom_api_key', apiKey);
     }
@@ -69,11 +70,17 @@ const App: React.FC = () => {
 
   const startAnalysis = async () => {
     if (!state.selectedFile) return;
-    if (!apiKey) {
+    
+    // Double check sebelum panggil service
+    const finalKey = apiKey || localStorage.getItem('phantom_api_key');
+    if (!finalKey) {
       setState(prev => ({ ...prev, error: "API Key missing. Enter it in System Config." }));
       setShowSettings(true);
       return;
     }
+
+    // Pastiin engine AI dapet key terbaru tepat sebelum call
+    process.env.API_KEY = finalKey;
 
     setState(prev => ({ ...prev, isAnalyzing: true, error: null }));
     try {
@@ -84,6 +91,8 @@ const App: React.FC = () => {
       setHistory(newHistory);
       localStorage.setItem('phantom_history', JSON.stringify(newHistory));
     } catch (err: any) {
+      // Tangkap error detail buat debugging
+      console.error("Ripper Error:", err);
       setState(prev => ({ ...prev, isAnalyzing: false, error: err.message || "Rip failed. L rizz. 💀" }));
     }
   };
