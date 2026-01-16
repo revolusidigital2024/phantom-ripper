@@ -9,7 +9,7 @@ import AccessGate from './AccessGate';
 
 const App: React.FC = () => {
   const [hasAccess, setHasAccess] = useState<boolean>(() => localStorage.getItem('phantom_access_granted') === 'true');
-  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem('phantom_api_key') || (process.env && process.env.API_KEY) || '');
+  const [apiKey, setApiKey] = useState<string>(localStorage.getItem('gemini_api_key') || '');
   const [state, setState] = useState<AppState>({
     isAnalyzing: false,
     isMixing: false,
@@ -23,15 +23,6 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<PromptResult[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>(TabType.PREVIEW);
   const [showSettings, setShowSettings] = useState(false);
-
-  // Sync state ke global process.env secara paksa
-  useEffect(() => {
-    if (apiKey) {
-      if (!process.env) (window as any).process.env = {};
-      process.env.API_KEY = apiKey;
-      localStorage.setItem('phantom_api_key', apiKey);
-    }
-  }, [apiKey]);
 
   useEffect(() => {
     const saved = localStorage.getItem('phantom_history');
@@ -47,6 +38,11 @@ const App: React.FC = () => {
     localStorage.removeItem('phantom_access_granted');
     setHasAccess(false);
     setShowSettings(false);
+  };
+
+  const handleApiKeyChange = (val: string) => {
+    setApiKey(val);
+    localStorage.setItem('gemini_api_key', val);
   };
 
   const handleFileSelect = (file: File) => {
@@ -70,29 +66,21 @@ const App: React.FC = () => {
 
   const startAnalysis = async () => {
     if (!state.selectedFile) return;
-    
-    // Double check sebelum panggil service
-    const finalKey = apiKey || localStorage.getItem('phantom_api_key');
-    if (!finalKey) {
-      setState(prev => ({ ...prev, error: "API Key missing. Enter it in System Config." }));
+    if (!apiKey) {
+      setState(prev => ({ ...prev, error: "OI BOSS! Pasang API Key dulu di SETTINGS (icon gear)! 💀" }));
       setShowSettings(true);
       return;
     }
 
-    // Pastiin engine AI dapet key terbaru tepat sebelum call
-    process.env.API_KEY = finalKey;
-
     setState(prev => ({ ...prev, isAnalyzing: true, error: null }));
     try {
-      const result = await analyzeMedia(state.selectedFile, state.context);
+      const result = await analyzeMedia(state.selectedFile, state.context, apiKey);
       setState(prev => ({ ...prev, result, isAnalyzing: false }));
       
       const newHistory = [result, ...history.slice(0, 9)];
       setHistory(newHistory);
       localStorage.setItem('phantom_history', JSON.stringify(newHistory));
     } catch (err: any) {
-      // Tangkap error detail buat debugging
-      console.error("Ripper Error:", err);
       setState(prev => ({ ...prev, isAnalyzing: false, error: err.message || "Rip failed. L rizz. 💀" }));
     }
   };
@@ -101,7 +89,7 @@ const App: React.FC = () => {
     if (!state.result || !state.selectedFile) return;
     setState(prev => ({ ...prev, isMixing: true }));
     try {
-      const variants = await generateVariants(state.result, state.selectedFile);
+      const variants = await generateVariants(state.result, state.selectedFile, apiKey);
       setState(prev => ({
         ...prev,
         result: { ...prev.result!, variants },
@@ -183,40 +171,32 @@ const App: React.FC = () => {
                   <span className="text-[#00f0ff]">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                   </span>
-                  <h3 className="text-[11px] font-black text-[#00f0ff] uppercase tracking-[0.2em]">INTEGRATION STATUS</h3>
+                  <h3 className="text-[11px] font-black text-[#00f0ff] uppercase tracking-[0.2em]">AI INTEGRATION</h3>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">GEMINI API KEY:</label>
-                    <input 
-                      type="password"
-                      placeholder="ENTER API KEY..."
-                      value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-xs text-[#00f0ff] focus:border-[#00f0ff]/50 outline-none transition-all font-mono"
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-[8px] text-zinc-600 uppercase font-bold tracking-widest">Connection:</span>
-                    <span className={`text-[8px] font-black px-2 py-0.5 rounded ${apiKey ? 'bg-[#ccff00]/10 text-[#ccff00]' : 'bg-red-500/10 text-red-500'}`}>
-                      {apiKey ? 'LINKED' : 'AWAITING KEY'}
-                    </span>
-                  </div>
-                  
-                  <p className="text-[9px] text-zinc-600 leading-relaxed italic mt-2">
-                    Manual key entry enabled. Key is stored locally for session persistence.
-                  </p>
-
+                <div className="flex justify-between items-center mb-4">
+                  <label className="text-[10px] font-bold text-[#00f0ff] uppercase tracking-wider">GOOGLE GEMINI API KEY</label>
                   <a 
                     href="https://aistudio.google.com/app/apikey" 
                     target="_blank" 
-                    rel="noopener noreferrer"
-                    className="block text-center text-[8px] text-[#00f0ff] hover:underline uppercase tracking-widest font-bold mt-2"
+                    className="text-[9px] font-black text-zinc-400 border border-zinc-800 px-3 py-1.5 rounded-lg hover:bg-white/5 flex items-center gap-2 transition-all"
                   >
-                    Get API Key from Google AI Studio
+                    GET FREE KEY
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                   </a>
+                </div>
+
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#00f0ff]/50">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                  </div>
+                  <input 
+                    type="password"
+                    placeholder="Paste AI Studio Key here..."
+                    value={apiKey}
+                    onChange={(e) => handleApiKeyChange(e.target.value)}
+                    className="w-full bg-[#050507] border border-[#00f0ff]/10 rounded-xl py-4 pl-12 pr-4 text-xs text-white placeholder:text-zinc-900 focus:border-[#00f0ff]/40 outline-none transition-all shadow-inner"
+                  />
                 </div>
               </div>
 
@@ -225,7 +205,7 @@ const App: React.FC = () => {
                   onClick={() => setShowSettings(false)}
                   className="w-full py-4 bg-[#ff007a] text-white font-black uppercase text-[10px] tracking-[0.3em] rounded-full hover:bg-[#ff007a]/80 transition-all shadow-[0_0_20px_rgba(255,0,122,0.3)]"
                 >
-                  SAVE CONFIG
+                  SAVE AND CLOSE
                 </button>
                 
                 <button 
